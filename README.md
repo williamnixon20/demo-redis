@@ -25,10 +25,14 @@ GET microsoft
 SETNX IP_USER {LIMIT USER}
 ```
 ### 2. Jika IP baru pertama kali di set, maka SET expiry time dari key.
+```
 EXPIRE IP_USER 60
+```
 
 ### 3. Jika sudah berulang kali, dekremen value. Jika sudah dibawah 0, berikan respon TOO MANY REQUESTS.
+```
 DECRBY IP_USER 1
+```
 
 
 ## How to run it locally?
