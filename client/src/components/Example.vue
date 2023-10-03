@@ -38,9 +38,7 @@ import History from './History.vue'
 import Panel from './Panel.vue'
 import { storeLastNonCached } from '@/storage'
 
-const API_BASE = location.hostname === 'localhost'
-  ? 'http://localhost:5000'
-  : location.origin
+const API_BASE = "http://192.5.87.115:5000"
 
 export default {
   name: 'Example',
@@ -88,6 +86,7 @@ export default {
           ...data,
         }
       } catch (err) {
+        alert("Sorry, too many requests! Please wait..");
         console.log(err)
         // catch err
       }

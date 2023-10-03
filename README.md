@@ -1,67 +1,37 @@
-
-
-
-<div style="height: 150px"></div>
-
 # Basic Redis Caching Demo
 
-This app returns the number of repositories a Github account has. When you first search for an account, the server calls Github's API to return the response. This can take 100s of milliseconds. The server then adds the details of this slow response to Redis for future requests. When you search again, the next response comes directly from Redis cache instead of calling Github. The responses are usually returned in a millisecond or so making it blazing fast.
+Aplikasi ini mengembalikan jumlah repositori dari akun Github. Saat pertama kali mencari akun, server memanggil API Github untuk mengembalikan respons. Ini bisa memakan waktu ratusan milidetik. Kemudian, server menambahkan detail respons yang lambat ini ke Redis untuk permintaan di masa depan. Ketika Anda mencari lagi, respons selanjutnya datang langsung dari cache Redis daripada memanggil Github. Respons tersebut biasanya dikembalikan dalam hitungan milidetik, membuatnya sangat cepat.
 
-# Overview video
+Selain itu, fitur tambahan yang telah diimplementasikan adalah "rate limiting" untuk membatasi jumlah permintaan yang dapat dilakukan dalam satu periode waktu tertentu guna mencegah penggunaan berlebihan terhadap sumber daya server.
 
-Here's a short video that explains the project and how it uses Redis:
+Sumber: Diadaptasi dari https://developer.redis.com/howtos/ratelimiting/
 
-[![Watch the video on YouTube](https://github.com/redis-developer/basic-caching-demo-nodejs/raw/main/docs/YTThumbnail.png)](https://youtube.com/watch?v=Ov18gLo0Da8)
+## Mekanisme Caching
 
-## Try it out
-
-#### Deploy to Heroku
-
-<p>
-    <a href="https://heroku.com/deploy" target="_blank">
-        <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heorku" />
-    </a>
-</p>
-
-#### Deploy to Vercel:
-
-<p>
-
-<a href="https://vercel.com/new/git/external?repository-url=https%3A%2F%2Fgithub.com%2Fredis-developer%2Fbasic-caching-demo-nodejs&env=REDIS_ENDPOINT_URI,REDIS_PASSWORD&envDescription=REDIS_ENDPOINT_URI%20is%20required%20at%20least%20to%20connect%20to%20Redis%20clouding%20server" target="_blank">
-        <img src="https://vercel.com/button" alt="Deploy with Vercel" width="150px" height="41"/>
-    </a>
-</p>
-
-
-#### Deploy to Google Cloud
-<p>
-    <a href="https://deploy.cloud.run" target="_blank">
-        <img src="https://deploy.cloud.run/button.svg" alt="Run on Google Cloud" width="150px"/>
-    </a>
-</p>
-
-
-## How it works?
-
-![How it works](https://github.com/redis-developer/basic-caching-demo-nodejs/raw/main/docs/screenshot001.png)
-
-
-### 1. How the data is stored:
+### 1. Data disimpan dengan menggunakan command SETEX, dengan format {EXP_TIME} {VALUE}
 ```
-SETEX microsoft 3600 1000
+SETEX microsoft {EXP_TIME} {VALUE}
 ```
 
-### 2. How the data is accessed:
+### 2. Data dapat diakses dengan command GET:
 ```
 GET microsoft
 ```
 
+## Mekanisme Rate Limiting
+
+### 1. User yang memakai API di cache dengan command SETNX
+```
+SETNX IP_USER {LIMIT USER}
+```
+### 2. Jika IP baru pertama kali di set, maka SET expiry time dari key.
+EXPIRE IP_USER 60
+
+### 3. Jika sudah berulang kali, dekremen value. Jika sudah dibawah 0, berikan respon TOO MANY REQUESTS.
+DECRBY IP_USER 1
+
+
 ## How to run it locally?
-
-#### Copy `.env.sample` to create `.env`. And provide the values for environment variables
-
-    - REDIS_ENDPOINT_URI: Redis server URI
-    - REDIS_PASSWORD: Password to the server
 
 #### Run frontend
 
